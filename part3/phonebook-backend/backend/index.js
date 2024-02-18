@@ -7,7 +7,16 @@ app.use(express.json())
 app.use(express.static('build'))
 app.use(cors())
 
-// app.use(morgan(':method :url :status :res[content-length] - :response-time ms :logger'))
+//defining custom token
+morgan.token('test', function (request, response) {
+    return JSON.stringify(request.body);
+});
+
+//using morgan tiny
+app.use(morgan('tiny'));
+
+//using custom token
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :test'));
 
 //data
 let persons = [
@@ -77,8 +86,9 @@ app.post('/api/persons/', (request, response) => {
 
     const newId = () => {
         const personLength = persons.length > 0
-            ? Math.max(...persons.map(p => p.id))
+            ? Math.floor(Math.random() * (2000 - 1) + 1)
             : 0
+
         return personLength + 1
     }
 
@@ -101,11 +111,6 @@ app.post('/api/persons/', (request, response) => {
         name: newContact.name,
         number: newContact.number,
     }
-
-    // morgan.token('logger',function(req, res){
-    //     const tok = JSON.stringify(req.body)
-    //     return tok
-    // })
 
     persons = persons.concat(newPerson)
     response.json(persons)
